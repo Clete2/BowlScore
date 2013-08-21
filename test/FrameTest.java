@@ -10,25 +10,19 @@ public class FrameTest {
 	private Frame regularFrame;
 	private Frame tenthFrame;
 
-	@Before
-	public void setUp() throws Exception {
-		this.regularFrame = new Frame(false);
-		this.tenthFrame = new Frame(true);
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		this.regularFrame = null;
-		this.tenthFrame = null;
-	}
-
 	@Test
 	public void testFrame() {
-		fail("Not yet implemented"); // TODO
+		this.regularFrame = new RegularFrame();
+		this.tenthFrame = new ExpandedFrame();
+		assertEquals(Frame.class, this.regularFrame.getClass().getSuperclass());
+		assertEquals(Frame.class, this.tenthFrame.getClass().getSuperclass());
 	}
 
 	@Test
 	public void testGetFrameState() throws InvalidScoreException {
+		this.regularFrame = new RegularFrame();
+		this.tenthFrame = new ExpandedFrame();
+
 		assertEquals(this.regularFrame.getFrameState(), FrameState.UNUSED);
 		assertEquals(this.tenthFrame.getFrameState(), FrameState.UNUSED);
 
@@ -44,80 +38,94 @@ public class FrameTest {
 		assertEquals(this.regularFrame.getFrameState(), FrameState.COMPLETE);
 		assertEquals(this.tenthFrame.getFrameState(), FrameState.COMPLETE);
 
-		this.regularFrame = new Frame(false);
+		this.regularFrame = new RegularFrame();
 
-		this.tenthFrame = new Frame(true);
+		this.tenthFrame = new ExpandedFrame();
 		this.tenthFrame.setScore(5, 0);
 		this.tenthFrame.setScore(5, 1);
 		assertEquals(this.tenthFrame.getFrameState(), FrameState.STARTED);
 		this.tenthFrame.setScore(1, 2);
 		assertEquals(this.tenthFrame.getFrameState(), FrameState.COMPLETE);
 
-		this.tenthFrame = new Frame(true);
+		this.tenthFrame = new ExpandedFrame();
 		this.tenthFrame.setScore(10, 0);
 		assertEquals(this.tenthFrame.getFrameState(), FrameState.STARTED);
 		this.tenthFrame.setScore(10, 1);
 		assertEquals(this.tenthFrame.getFrameState(), FrameState.STARTED);
 		this.tenthFrame.setScore(10, 2);
-		assertEquals(this.tenthFrame.getFrameState(), FrameState.STARTED);
+		assertEquals(this.tenthFrame.getFrameState(), FrameState.COMPLETE);
 	}
 
 	@Test
-	public void testGetOutcome() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	@Test
-	public void testIsTenthFrame() {
-		assertEquals(regularFrame.isTenthFrame(), false);
-		assertEquals(tenthFrame.isTenthFrame(), true);
+	public void testGetFrameOutcome() throws InvalidScoreException {
+		this.regularFrame = new RegularFrame();
+		this.tenthFrame = new ExpandedFrame();
+		
+		assertEquals(FrameOutcome.NORMAL, this.regularFrame.getFrameOutcome());
+		this.regularFrame.setScore(0, 0);
+		this.regularFrame.setScore(0, 1);
+		assertEquals(FrameOutcome.NORMAL, this.regularFrame.getFrameOutcome());
+		this.regularFrame.setScore(10, 0);
+		assertEquals(FrameOutcome.STRIKE, this.regularFrame.getFrameOutcome());
+		this.regularFrame.setScore(5, 0);
+		this.regularFrame.setScore(5, 1);
+		assertEquals(FrameOutcome.SPARE, this.regularFrame.getFrameOutcome());
+		
+		assertEquals(FrameOutcome.NORMAL, this.tenthFrame.getFrameOutcome());
+		this.tenthFrame.setScore(0, 0);
+		this.tenthFrame.setScore(0, 1);
+		assertEquals(FrameOutcome.NORMAL, this.tenthFrame.getFrameOutcome());
+		this.tenthFrame.setScore(10, 0);
+		assertEquals(FrameOutcome.STRIKE, this.tenthFrame.getFrameOutcome());
+		this.tenthFrame.setScore(5, 0);
+		this.tenthFrame.setScore(5, 1);
+		assertEquals(FrameOutcome.SPARE, this.tenthFrame.getFrameOutcome());
 	}
 
 	@Test
 	public void testGetFrameScore() {
+		this.regularFrame = new RegularFrame();
+		this.tenthFrame = new ExpandedFrame();
+
 		// Regular scoring
 		try {
 			this.regularFrame.setScore(2, 0);
 			this.regularFrame.setScore(4, 1);
 			this.tenthFrame.setScore(2, 0);
 			this.tenthFrame.setScore(4, 1);
-		} catch(Exception e) {
-			fail("Exception should not occur.");
-		}
-		assertEquals(2, this.regularFrame.getScore(0));
-		assertEquals(4, this.regularFrame.getScore(1));
-		assertEquals(2, this.tenthFrame.getScore(0));
-		assertEquals(4, this.tenthFrame.getScore(1));
+			assertEquals(2, this.regularFrame.getScore(0));
+			assertEquals(4, this.regularFrame.getScore(1));
+			assertEquals(2, this.tenthFrame.getScore(0));
+			assertEquals(4, this.tenthFrame.getScore(1));
 
-		// Three bowls
-		try {
+
+			// Three bowls
 			this.tenthFrame.setScore(5, 0);
 			this.tenthFrame.setScore(5, 1);
 			this.tenthFrame.setScore(10, 2);
-		} catch(Exception e) {
-			fail("Exception should not occur.");
-		}
-		assertEquals(5, this.tenthFrame.getScore(0));
-		assertEquals(5, this.tenthFrame.getScore(1));
-		assertEquals(10, this.tenthFrame.getScore(2));
+			assertEquals(5, this.tenthFrame.getScore(0));
+			assertEquals(5, this.tenthFrame.getScore(1));
+			assertEquals(10, this.tenthFrame.getScore(2));
 
-		// Three strikes
-		try {
+			// Three strikes
 			this.tenthFrame.setScore(10, 0);
 			this.tenthFrame.setScore(10, 1);
 			this.tenthFrame.setScore(10, 2);
+			assertEquals(10, this.tenthFrame.getScore(0));
+			assertEquals(10, this.tenthFrame.getScore(1));
+			assertEquals(10, this.tenthFrame.getScore(2));
 		} catch(Exception e) {
 			fail("Exception should not occur.");
 		}
-		assertEquals(10, this.tenthFrame.getScore(0));
-		assertEquals(10, this.tenthFrame.getScore(1));
-		assertEquals(10, this.tenthFrame.getScore(2));
 
 		// TODO: Illegal moves
 	}
 
 	@Test
 	public void testGetFrameSum() {
+		this.regularFrame = new RegularFrame();
+		this.tenthFrame = new ExpandedFrame();
+
 		// Regular scoring
 		try {
 			this.regularFrame.setScore(2, 0);
@@ -129,7 +137,7 @@ public class FrameTest {
 		}
 		assertEquals(this.regularFrame.getSum(), 6);
 		assertEquals(this.tenthFrame.getSum(), 6);
-		
+
 		// Three bowls
 		try {
 			this.tenthFrame.setScore(5, 0);

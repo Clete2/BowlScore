@@ -1,29 +1,12 @@
+public abstract class Frame {
 
-public class Frame {
-	private int[] scores;
-	private boolean tenthFrame;
-	private FrameState frameState;
+	protected int[] scores;
 
-	public Frame(boolean tenthFrame) {
-		this.frameState = FrameState.UNUSED;
-		this.tenthFrame = tenthFrame;
-		if(!tenthFrame){
-			this.scores = new int[2];
-			this.scores[0] = -1;
-			this.scores[1] = -1;
-		} else {
-			this.scores = new int[3];
-			this.scores[0] = -1;
-			this.scores[1] = -1;
-			this.scores[2] = -1;
-		}
+	public Frame() {
+		super();
 	}
 
-	public FrameState getFrameState() {
-		return this.frameState;
-	}
-
-	public FrameOutcome getOutcome() {
+	public FrameOutcome getFrameOutcome() {
 		FrameOutcome outcome = FrameOutcome.NORMAL;
 
 		if(this.scores[0] == 10) {
@@ -34,13 +17,13 @@ public class Frame {
 
 		return outcome;
 	}
-
-	public boolean isTenthFrame() {
-		return this.tenthFrame;
-	}
-
-	public int getScore(int position) {
-		return this.scores[position];
+	
+	public int getScore(int position) throws UnexpectedDataException {
+		if(position < this.scores.length) {
+			return this.scores[position];
+		} else {
+			throw new UnexpectedDataException("Score position is invalid.");
+		}
 	}
 
 	public int getSum() {
@@ -59,44 +42,13 @@ public class Frame {
 		if(this.isScoreValid(score, position)) {
 			// Set score
 			this.scores[position] = score;
-			// Update status
-			this.updateStatus();
+			// Update the frame's state
 		}else{
 			throw new InvalidScoreException("The score submitted is invalid.");
 		}
 	}
 
-	private boolean isScoreValid(int score, int position) {
-		boolean valid = true;
-
-		if(position < 0 || (!this.tenthFrame && position > 1) || (this.tenthFrame && position > 2)) {
-			// Trying to score a higher position than the frame allows.
-			valid = false;
-		} else if(position >= 1 && this.scores[position - 1] == -1) {
-			// Trying to score when a previous score wasn't set yet. 
-			valid = false;
-		} else if(this.tenthFrame && position == 2 && (this.scores[0] + this.scores[1]) < 10) {
-			// Trying to score the third position on frame ten when the player didn't get a strike or spare.
-			valid = false;
-		} else if(score > 10 || score < 0) {
-			// Score is too small or too large.
-			valid = false;
-		}
-
-		return valid;
-	}
-
-	private void updateStatus() {
-		if((!this.tenthFrame && this.scores[0] == -1 && this.scores[1] == -1) ||
-				(this.tenthFrame && this.scores[0] == -1 && this.scores[1] == -1 && this.scores[2] == -1)) {
-			this.frameState = FrameState.UNUSED;
-		} else if((!this.tenthFrame && this.scores[0] != -1 && this.scores[1] != -1) ||
-				(!this.tenthFrame && this.getSum() == 10) ||
-				(this.tenthFrame && this.scores[0] != -1 && this.scores[1] != -1 && this.scores[0] + this.scores[1] < 10) ||
-				(this.tenthFrame && this.scores[0] != -1 && this.scores[1] != -1 && this.scores[2] != -1)) {
-			this.frameState = FrameState.COMPLETE;
-		} else {
-			this.frameState = FrameState.STARTED;
-		}
-	}
+	public abstract FrameState getFrameState();
+	
+	protected abstract boolean isScoreValid(int score, int position);
 }
